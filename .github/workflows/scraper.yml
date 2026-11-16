@@ -1,0 +1,33 @@
+name: Scraping Diario Inmobiliario
+
+on:
+  schedule:
+    - cron: '0 11 * * *' # Todos los días a las 6:00 AM (Hora Lima)
+  workflow_dispatch: # Nos permite ejecutar el botón manualmente
+
+permissions:
+  contents: write
+
+jobs:
+  buscar-depas:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Clonar repositorio
+      uses: actions/checkout@v4
+
+    - name: 🐍 Instalar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: 🤖 Generar datos (Scraper simulado)
+      run: python scraper.py
+
+    - name: 💾 Guardar resultados en data/resultados.json
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action Bot"
+        git add data/resultados.json
+        git commit -m "Actualización diaria de depas" || exit 0 
+        git push
