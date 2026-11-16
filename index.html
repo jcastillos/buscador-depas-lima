@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador Híbrido de Depas - Lima</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏢 Buscador de Depas en Lima</h1>
+            <p>Solo Venta | Moneda: Soles (S/)</p>
+        </header>
+
+        <!-- CAPA 3: Panel de Estado -->
+        <div id="panel-estado" class="panel-estado oculto">
+            <h3>📡 Estado de los Portales (Capa 2)</h3>
+            <ul id="lista-estado"></ul>
+        </div>
+
+        <div class="layout">
+            <!-- PANEL DE FILTROS -->
+            <aside class="filtros">
+                <h2>Mis Filtros</h2>
+                
+                <label>1. Distrito(s)</label>
+                <select id="distrito" multiple>
+                    <option value="miraflores">Miraflores</option>
+                    <option value="san isidro">San Isidro</option>
+                    <option value="surco">Santiago de Surco</option>
+                    <option value="barranco">Barranco</option>
+                    <option value="jesus maria">Jesús María</option>
+                    <option value="magdalena">Magdalena del Mar</option>
+                    <option value="san miguel">San Miguel</option>
+                    <option value="la molina">La Molina</option>
+                </select>
+                <small>Presiona Ctrl (o Cmd) para elegir varios</small>
+
+                <label>2. Precio (S/)</label>
+                <div class="rango">
+                    <input type="number" id="precioMin" placeholder="Mínimo">
+                    <input type="number" id="precioMax" placeholder="Máximo">
+                </div>
+
+                <div class="rango">
+                    <div>
+                        <label>3. Dormitorios</label>
+                        <input type="number" id="dormitorios" min="1" placeholder="Ej: 3">
+                    </div>
+                    <div>
+                        <label>4. Baños</label>
+                        <input type="number" id="banos" min="1" placeholder="Ej: 2">
+                    </div>
+                </div>
+
+                <label>5. Área Techada (m²)</label>
+                <div class="rango">
+                    <input type="number" id="areaMin" placeholder="Mínimo">
+                    <input type="number" id="areaMax" placeholder="Máximo">
+                </div>
+
+                <button id="btnBuscar" class="btn-principal">🔍 Generar Enlaces</button>
+            </aside>
+
+            <!-- RESULTADOS -->
+            <main class="resultados">
+                <div id="caja-enlaces" class="caja-enlaces">
+                    <h2>🔗 CAPA 1: Enlaces Inteligentes</h2>
+                    <p>Configura tus filtros y haz clic en Buscar. Se generarán enlaces seguros para cada portal.</p>
+                    <div id="botones-portales"></div>
+                    <div id="advertencia-filtros" class="advertencia oculto"></div>
+                </div>
+
+                <div id="caja-tarjetas" class="caja-tarjetas oculto">
+                    <h2>🏆 CAPA 2: Resultados Automáticos</h2>
+                    <p>Aquí aparecerán las tarjetas scrapeadas en la Fase 6.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
