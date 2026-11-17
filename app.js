@@ -1,59 +1,28 @@
-document.getElementById('btnBuscar').addEventListener('click', () => {
-    // 1. Recolectar distrito (la URL básica de los portales se basa en el distrito)
-    const selectorDistrito = document.getElementById('distrito');
-    const distritos = Array.from(selectorDistrito.selectedOptions).map(opt => opt.value);
+// --- CAPA 1: ENLACES INTELIGENTES ---
+document.getElementById('btn-generar').addEventListener('click', (e) => {
+    e.preventDefault();
     
-    // Si no elige distrito, por defecto usamos 'lima'
-    const distritoQuery = distritos.length > 0 ? distritos[0].replace(' ', '-') : 'lima'; 
-
-    // 2. Armar las URLs base (Solo los 4 portales aprobados)
-    let urlUrbania = `https://urbania.pe/buscar/venta-de-departamentos-en-${distritoQuery}`;
-    let urlAdonde = `https://www.adondeyvivir.com/departamentos-en-venta-en-${distritoQuery}.html`;
-    let urlProperati = `https://www.properati.com.pe/s/${distritoQuery}/departamento/venta`;
-    let urlMitula = `https://departamentos.mitula.pe/searchRE/q-${distritoQuery}`;
-
-    // 3. Crear los botones en pantalla
-    const contenedor = document.getElementById('botones-portales');
-    contenedor.innerHTML = ''; // Limpiar botones anteriores
-
-    const portales = [
-        { nombre: 'Urbania', url: urlUrbania },
-        { nombre: 'Adonde Vivir', url: urlAdonde },
-        { nombre: 'Properati', url: urlProperati },
-        { nombre: 'Mitula', url: urlMitula }
-    ];
-
-    portales.forEach(portal => {
-        const btn = document.createElement('a');
-        btn.href = portal.url;
-        btn.target = "_blank"; // Abre en pestaña nueva
-        btn.className = "btn-portal";
-        btn.innerText = `🔗 Abrir en ${portal.nombre}`;
-        contenedor.appendChild(btn);
-    });
-
-    const btnTodos = document.createElement('button');
-    btnTodos.className = "btn-portal btn-todos";
-    btnTodos.innerText = "🚀 Abrir TODOS a la vez";
-    btnTodos.onclick = () => {
-        alert("⚠️ ATENCIÓN: Tu navegador puede bloquear las pestañas múltiples.\nSi ves un icono rojo en la barra de direcciones arriba a la derecha, haz clic en él y selecciona 'Permitir siempre'.");
-        portales.forEach(p => window.open(p.url, '_blank'));
-    };
-    contenedor.appendChild(btnTodos);
-
-    // 4. Mostrar advertencia sobre los filtros manuales vs automáticos
-    const advertencia = document.getElementById('advertencia-filtros');
-    advertencia.classList.remove('oculto');
-    advertencia.innerHTML = `
-        <strong>💡 Nota sobre los Enlaces:</strong><br>
-        La Capa 1 solo aplica el Distrito en la URL. Los filtros de Precio, Dormitorios, Baños y Área tendrás que aplicarlos manualmente en la página del portal.<br>
-        <em>¡No te preocupes! En la Capa 2 (que construiremos pronto), nuestro sistema se encargará de aplicar los 5 filtros automáticamente y mostrarte el mejor precio si un depa está duplicado.</em>
+    const distrito = document.getElementById('distrito').value;
+    const precioMin = document.getElementById('precio-min').value || '';
+    const precioMax = document.getElementById('precio-max').value || '';
+    
+    // Generar enlaces para los portales
+    const urlUrbania = `https://urbania.pe/buscar/proyectos-inmobiliarios?distritos=${distrito}&precio-desde=${precioMin}&precio-hasta=${precioMax}`;
+    const urlProperati = `https://www.properati.com.pe/s/${distrito}/departamento/venta/?precio_min=${precioMin}&precio_max=${precioMax}`;
+    
+    const contenedor = document.getElementById('enlaces-portales');
+    contenedor.innerHTML = `
+        <a href="${urlUrbania}" target="_blank" class="btn-portal urbania">Abrir en Urbania</a>
+        <a href="${urlProperati}" target="_blank" class="btn-portal properati">Abrir en Properati</a>
     `;
+
+    // Disparar la Capa 3 (Filtrar tarjetas del robot)
+    aplicarFiltrosYRenderizar();
 });
 
-// --- INICIO DE LA CAPA 2 y 3 (Lectura y Deduplicación) ---
+// --- CAPA 2 y 3: ROBOT Y DEDUPLICACIÓN ---
+let datosGlobales = []; // Guarda todos los depas en memoria
 
-// Función para cargar los datos del robot al cargar la página
 window.addEventListener('DOMContentLoaded', () => {
     fetch('data/resultados.json')
         .then(response => {
@@ -61,48 +30,69 @@ window.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(datos => {
-            procesarTarjetas(datos);
-            actualizarPanelEstado(datos);
+            datosGlobales = datos;
+            procesarTarjetas(datosGlobales); // Muestra todo al inicio
+            actualizarPanelEstado(datosGlobales);
         })
         .catch(error => {
             console.log("Capa 2 inactiva o sin datos:", error);
             document.getElementById('caja-tarjetas').classList.add('oculto');
+            document.getElementById('panel-estado').classList.add('oculto');
         });
 });
 
+// Lee los filtros del panel y recorta la lista
+function aplicarFiltrosYRenderizar() {
+    if (datosGlobales.length === 0) return;
+
+    const minPrecio = parseFloat(document.getElementById('precio-min').value) || 0;
+    const maxPrecio = parseFloat(document.getElementById('precio-max').value) || Infinity;
+    const cuartos = parseInt(document.getElementById('dormitorios').value) || 0;
+    const banos = parseInt(document.getElementById('banos').value) || 0;
+    const minArea = parseFloat(document.getElementById('area-min').value) || 0;
+    const maxArea = parseFloat(document.getElementById('area-max').value) || Infinity;
+
+    const datosFiltrados = datosGlobales.filter(depa => {
+        // En la Capa 3 trabajamos con el 'mejor_precio' ya que depa viene de la lista original
+        const precioAComparar = depa.precio_soles; 
+        const cumplePrecio = precioAComparar >= minPrecio && (maxPrecio === Infinity || precioAComparar <= maxPrecio);
+        const cumpleDorms = cuartos === 0 || depa.dormitorios >= cuartos;
+        const cumpleBanos = banos === 0 || depa.banos >= banos;
+        const cumpleArea = depa.area_m2 >= minArea && (maxArea === Infinity || depa.area_m2 <= maxArea);
+        
+        return cumplePrecio && cumpleDorms && cumpleBanos && cumpleArea;
+    });
+
+    procesarTarjetas(datosFiltrados);
+}
+
+// Deduplica y dibuja las tarjetas
 function procesarTarjetas(datosBrutos) {
     const cajaTarjetas = document.getElementById('caja-tarjetas');
     cajaTarjetas.classList.remove('oculto');
-    cajaTarjetas.innerHTML = `<h2>🏆 CAPA 2: Resultados Unificados</h2>`;
+    cajaTarjetas.innerHTML = `<h2>🏆 CAPA 2 y 3: Resultados Unificados</h2>`;
     
-    // DEDUPLICACIÓN
     let depasUnicos = [];
 
     datosBrutos.forEach(depa => {
         let duplicadoEncontrado = depasUnicos.find(unico => {
-            // CRITERIO DE SIMILITUD: Mismo distrito, cuartos, baños y área similar (margen 2m2)
             const mismoDistrito = unico.distrito === depa.distrito;
             const mismosCuartos = unico.dormitorios === depa.dormitorios;
             const mismosBanos = unico.banos === depa.banos;
             const areaSimilar = Math.abs(unico.area_m2 - depa.area_m2) <= 2;
-            
             return mismoDistrito && mismosCuartos && mismosBanos && areaSimilar;
         });
 
         if (duplicadoEncontrado) {
-            // ¡Es un duplicado! Añadimos el enlace y comparamos el precio
             duplicadoEncontrado.enlaces.push({
                 portal: depa.portal,
                 url: depa.enlace,
                 precio: depa.precio_soles
             });
-
-            // Actualiza el mejor precio si este es más barato
             if (depa.precio_soles < duplicadoEncontrado.mejor_precio) {
                 duplicadoEncontrado.mejor_precio = depa.precio_soles;
             }
         } else {
-            // Es un depa nuevo
             depasUnicos.push({
                 distrito: depa.distrito,
                 dormitorios: depa.dormitorios,
@@ -115,7 +105,7 @@ function procesarTarjetas(datosBrutos) {
         }
     });
 
-    // DIBUJAR LAS TARJETAS
+    // Dibujar
     depasUnicos.forEach(depa => {
         const tarjeta = document.createElement('div');
         tarjeta.style.border = "1px solid #ccc";
@@ -142,7 +132,6 @@ function procesarTarjetas(datosBrutos) {
             <p style="margin:10px 0;">
                 🛏️ ${depa.dormitorios} Dorms. | 🚽 ${depa.banos} Baños | 📐 ${depa.area_m2} m² 
             </p>
-            <p style="font-size:0.85em; color:#555;">Encontrado en ${depa.enlaces.length} portal(es):</p>
             <div>${botonesHTML}</div>
         `;
         cajaTarjetas.appendChild(tarjeta);
