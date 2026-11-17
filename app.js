@@ -6,14 +6,14 @@ document.getElementById('btn-generar').addEventListener('click', (e) => {
     const precioMin = document.getElementById('precio-min').value || '';
     const precioMax = document.getElementById('precio-max').value || '';
     
-    // Generar enlaces para los portales
-    const urlUrbania = `https://urbania.pe/buscar/proyectos-inmobiliarios?distritos=${distrito}&precio-desde=${precioMin}&precio-hasta=${precioMax}`;
+    // Generar enlaces armados
+    const urlUrbania = `https://urbania.pe/buscar/venta-de-departamentos-en-${distrito}?precio-desde=${precioMin}&precio-hasta=${precioMax}`;
     const urlProperati = `https://www.properati.com.pe/s/${distrito}/departamento/venta/?precio_min=${precioMin}&precio_max=${precioMax}`;
     
     const contenedor = document.getElementById('enlaces-portales');
     contenedor.innerHTML = `
-        <a href="${urlUrbania}" target="_blank" class="btn-portal urbania">Abrir en Urbania</a>
-        <a href="${urlProperati}" target="_blank" class="btn-portal properati">Abrir en Properati</a>
+        <a href="${urlUrbania}" target="_blank" class="btn-portal urbania">🔗 Abrir en Urbania</a>
+        <a href="${urlProperati}" target="_blank" class="btn-portal properati">🔗 Abrir en Properati</a>
     `;
 
     // Disparar la Capa 3 (Filtrar tarjetas del robot)
@@ -53,7 +53,7 @@ function aplicarFiltrosYRenderizar() {
     const maxArea = parseFloat(document.getElementById('area-max').value) || Infinity;
 
     const datosFiltrados = datosGlobales.filter(depa => {
-        // En la Capa 3 trabajamos con el 'mejor_precio' ya que depa viene de la lista original
+        // En la Capa 3 trabajamos con el precio original de la lista
         const precioAComparar = depa.precio_soles; 
         const cumplePrecio = precioAComparar >= minPrecio && (maxPrecio === Infinity || precioAComparar <= maxPrecio);
         const cumpleDorms = cuartos === 0 || depa.dormitorios >= cuartos;
@@ -105,7 +105,12 @@ function procesarTarjetas(datosBrutos) {
         }
     });
 
-    // Dibujar
+    if(depasUnicos.length === 0){
+        cajaTarjetas.innerHTML += `<p>No hay depas que coincidan con estos filtros.</p>`;
+        return;
+    }
+
+    // Dibujar tarjetas
     depasUnicos.forEach(depa => {
         const tarjeta = document.createElement('div');
         tarjeta.style.border = "1px solid #ccc";
