@@ -1,0 +1,35 @@
+[
+    {
+        "id": "depa_urbania_01",
+        "portal": "Urbania",
+        "distrito": "miraflores",
+        "precio_soles": 500000,
+        "dormitorios": 3,
+        "banos": 2,
+        "area_m2": 100,
+        "enlace": "https://urbania.pe/aviso-ejemplo-1",
+        "fecha": "2026-11-16 21:00:52"
+    },
+    {
+        "id": "depa_properati_01",
+        "portal": "Properati",
+        "distrito": "miraflores",
+        "precio_soles": 485000,
+        "dormitorios": 3,
+        "banos": 2,
+        "area_m2": 100,
+        "enlace": "https://properati.com.pe/aviso-ejemplo-2",
+        "fecha": "2026-11-16 21:00:52"
+    },
+    {
+        "id": "depa_adonde_01",
+        "portal": "Adonde Vivir",
+        "distrito": "san isidro",
+        "precio_soles": 850000,
+        "dormitorios": 2,
+        "banos": 2,
+        "area_m2": 80,
+        "enlace": "https://adondeyvivir.com/aviso-ejemplo-3",
+        "fecha": "2026-11-16 21:00:52"
+    }
+]
